@@ -1,16 +1,25 @@
-with main as(select *, 
-COUNT(customer_id) OVER
-(PARTITION BY created_at) AS purchase_number
-from `analytics-engineers-club.coffee_shop.orders`orders
-left join `analytics-engineers-club.coffee_shop.customers` customers on orders.customer_id = customers.id),
+{{ config(
+    materialized='table'
+) }}
 
-total_orders as (
-select customer_id, count(distinct id) as number_of_orders
-from  `analytics-engineers-club.coffee_shop.orders`
-group by customer_id
+with customer_orders as (
+    select
+        customer_id,
+        count(*) as number_of_orders,
+        min(created_at) as first_order_at,
+        sum(total) as total_order_value
+    from `analytics-engineers-club.coffee_shop.orders`
+    group by 1
 )
 
-select main.customer_id, name, email, created_at as first_order_date, number_of_orders  from main
-left join total_orders on main.customer_id = total_orders.customer_id
-where purchase_number = 1
-order by first_order_date
+select
+    c.id AS customer_id,
+    c.name,
+    c.email,
+    co.first_order_at,
+    co.number_of_orders,
+    co.total_order_value
+
+from `analytics-engineers-club.coffee_shop.customers` as c
+left join customer_orders as co
+    on c.id = co.customer_id
