@@ -1,23 +1,34 @@
--- select
---   date_trunc(product_created_at, month) as date_month,
---   sum(case when category = 'coffee beans' then price end) as coffee_beans_amount,
---   sum(case when category = 'merch' then price end) as merch_amount,
---   sum(case when category = 'brewing supplies' then price end) as brewing_supplies_amount
--- -- you may have to `ref` a different model here, depending on what you've built previously
--- from {{ ref('products') }}
--- group by 1
 
 
+{{ config(
+    materialized='table'
+) }}
 
-
-{% set coffee_types = ["coffee_beans", "merch", "brewing_supplies"] %}
+with first_table as (
+    select
+ *,
+ case when category = 'coffee beans' THEN 'coffee_beans'
+         when category = 'merch' THEN 'merch'
+         when category = 'brewing supplies' THEN 'brewing_supplies'
+         else category end as category_proper
+from 
+ {{ ref('products') }}
+)
 
 
 select
     date_trunc(product_created_at, month) as date_month,
-    {% for coffee in coffee_types %}
-    sum(case when category = '{{coffee}}' then price end) as '{{coffee}}'_amount
+    {% for coffee in ["coffee_beans", "merch", "brewing_supplies"] %}
+    sum(case when category_proper = '{{coffee}}' then price end) as {{coffee}}_amount
+    {% if not loop.last %},{% endif %}
     {% endfor %}
 from
-    {{ ref('products') }}
+    first_table
 group by 1
+
+
+
+
+
+
+
