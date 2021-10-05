@@ -1,0 +1,11 @@
+version: 2
+
+models:
+
+- name: products
+  tests:
+    - dbt_utils.mutually_exclusive_ranges:
+        lower_bound_column: price_created_at
+        upper_bound_column: price_ended_at
+        partition_by: product_id
+        gaps: not_allowed

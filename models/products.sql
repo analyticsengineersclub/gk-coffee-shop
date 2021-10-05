@@ -4,6 +4,7 @@
 
 select 
 product_prices.id,
+product_prices.product_id,
 product_prices.price,
 product_prices.created_at as price_created_at,
 product_prices.ended_at as price_ended_at,
