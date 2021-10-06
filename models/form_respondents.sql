@@ -1,5 +1,5 @@
 {{ config(
-    materialized='incremental'
+    materialized='incremental',
     unique_key='github_username'
 ) }}
 
