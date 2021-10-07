@@ -1,4 +1,4 @@
-{% snapshot favorite_ice_cream_flavors %}
+{% snapshot ice_cream_snapshot %}
 
 {{ config(
       target_schema='snapshots',
